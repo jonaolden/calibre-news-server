@@ -32,7 +32,7 @@ COPY ./recipes ${RECIPES_FOLDER}
 # Define Cronjob
 ENV CRON_TIME="0 0 * * *"
 COPY ./download_news.sh /opt/download_news.sh
-RUN crontab -l | { cat; echo "${CRON_TIME} bash /opt/download_news.sh"; } | crontab -
+RUN crontab -l | { cat; echo "${CRON_TIME} bash /opt/download_news.sh 'http://127.0.0.1:8080'"; } | crontab -
 
 # Copy basic user
 COPY ./users.sqlite ${USER_DB}
