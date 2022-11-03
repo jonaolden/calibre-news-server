@@ -1,13 +1,13 @@
 #!/bin/bash
 
 for filename in ${RECIPES_FOLDER}/*.recipe; do
-    echo "Converting recipe $filename to EPUB $filename.epub"
-    ebook-convert $filename $filename.epub --output-profile=kindle
+    echo "Converting recipe $filename to MOBI $filename.mobi"
+    ebook-convert $filename $filename.mobi --output-profile=kindle
 
-    echo "Annotating EPUB $filename.epub with the dailynews\$\$ tag"
-    ebook-meta $filename.epub --tag dailynews
+    echo "Annotating MOBI $filename.mobi with the dailynews\$\$ tag"
+    ebook-meta $filename.mobi --tag dailynews
 
-    echo "Adding EPUB $filename.epub to the library"
-    calibredb add $filename.epub --library-path $1 --username "admin" --password "admin" --automerge ${DUPLICATE_STRATEGY}
+    echo "Adding MOBI $filename.mobi to the library"
+    calibredb add $filename.mobi --library-path $1 --username "admin" --password "admin" --automerge ${DUPLICATE_STRATEGY}
 done
 rm ${RECIPES_FOLDER}/*.epub
