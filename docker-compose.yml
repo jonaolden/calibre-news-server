@@ -5,3 +5,5 @@ services:
     build: .
     volumes:
       - ./library:/opt/library
+    ports:
+      - "8080:8080"
