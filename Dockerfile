@@ -28,7 +28,7 @@ RUN calibredb add ${EBOOK_EXAMPLE} --with-library ${LIBRARY_FOLDER}
 RUN wget https://raw.githubusercontent.com/kovidgoyal/calibre/master/recipes/taggeschau_de.recipe -O ${RECIPES_FOLDER}/tageschau_de.recipe
 
 # Define Cronjob
-ENV CRON_TIME="* * 1 * *"
+ENV CRON_TIME="0 0 * * *"
 COPY ./download_news.sh /opt/download_news.sh
 RUN crontab -l | { cat; echo "${CRON_TIME} bash /opt/download_news.sh"; } | crontab -
 
