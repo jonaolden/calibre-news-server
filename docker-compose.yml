@@ -1,7 +1,35 @@
-version: "3.5"
+version: "3.8"
 
 services:
   calibre-server:
     build: .
+    container_name: calibre-server
     ports:
-      - "8080:8080"
+      - "8080:8080"                      # Calibre server port
+    volumes:
+      - ./library:/opt/library           # Persist library folder
+      - ./recipes:/opt/recipes           # Persist recipes folder
+      - ./users.sqlite:/opt/users.sqlite # Persist user database
+    environment:
+      - RECIPES_FOLDER=/opt/recipes
+      - LIBRARY_FOLDER=/opt/library
+      - USER_DB=/opt/users.sqlite
+      - DUPLICATE_STRATEGY=new_record    # Behavior for duplicate entries
+      - CRON_TIME=0 0 * * *              # Cron job schedule
+    restart: unless-stopped
+
+  syncthing:
+    image: syncthing/syncthing:latest
+    container_name: syncthing
+    ports:
+      - "8384:8384"                      # Syncthing web interface
+      - "22000:22000"                    # Syncthing sync port
+      - "21027:21027/udp"                # Syncthing discovery port
+    volumes:
+      - ./syncthing/config:/var/syncthing/config # Persist Syncthing config
+      - ./library:/var/syncthing/library         # Sync the library folder
+    environment:
+      - PUID=1000                        # Set user ID for permissions
+      - PGID=1000                        # Set group ID for permissions
+      - TZ=Etc/UTC                       # Set timezone
+    restart: unless-stopped
