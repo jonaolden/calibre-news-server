@@ -6,4 +6,4 @@ services:
     ports:
       - "8081:8081"  # Port for Calibre server
     volumes:
-      - /path/to/host/library:/opt/library  # Map the library folder to the host
+      - /home/oldenburg/library:/opt/library  # Map the host folder to the container
