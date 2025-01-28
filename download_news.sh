@@ -1,21 +1,33 @@
 #!/bin/bash
 
-# Ensure the recipes folder exists
-if [ ! -d "${RECIPES_FOLDER}" ]; then
-  echo "Error: Recipes folder does not exist: ${RECIPES_FOLDER}"
-  exit 1
-fi
+# Define paths
+LOG_FILE=/opt/record.sqlite
+
+# Ensure the SQLite database exists with a 'records' table
+sqlite3 $LOG_FILE "CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY, file_path TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);"
 
 for filename in ${RECIPES_FOLDER}/*.recipe; do
-    echo "Converting recipe $filename to MOBI $filename.mobi"
-    ebook-convert $filename $filename.mobi --output-profile=kindle
+    echo "Processing recipe $filename"
 
-    echo "Annotating MOBI $filename.mobi with the dailynews\$\$ tag"
-    ebook-meta $filename.mobi --tag dailynews
+    # Convert recipe to EPUB format only
+    ebook-convert $filename $filename.epub --output-profile=tablet
 
-    echo "Adding MOBI $filename.mobi to the library"
-    calibredb add $filename.mobi --library-path $1 --username "${CALIBRE_USER:-admin}" --password "${CALIBRE_PASS:-admin}" --automerge ${DUPLICATE_STRATEGY:-new_record}
+    # Annotate the EPUB file with a tag
+    ebook-meta $filename.epub --tag dailynews
+
+    # Add the EPUB file to the library
+    calibredb add $filename.epub --library-path $1 --username "admin" --password "admin" --automerge ${DUPLICATE_STRATEGY}
+
+    # Log the record in the SQLite database
+    sqlite3 $LOG_FILE "INSERT INTO records (file_path) VALUES ('$filename.epub');"
+
+    # Enforce retention policy: Keep only the latest 50 entries
+    MAX_ENTRIES=50
+    sqlite3 $LOG_FILE "DELETE FROM records WHERE id NOT IN (SELECT id FROM records ORDER BY timestamp DESC LIMIT $MAX_ENTRIES);"
 done
 
-# Cleanup any .epub files left over
-rm ${RECIPES_FOLDER}/*.epub
+# Clean up old files no longer in the database
+for old_file in $(sqlite3 $LOG_FILE "SELECT file_path FROM records WHERE id NOT IN (SELECT id FROM records ORDER BY timestamp DESC LIMIT $MAX_ENTRIES);"); do
+    echo "Removing old file: $old_file"
+    rm -f $old_file
+done
