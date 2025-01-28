@@ -6,14 +6,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
 
 # Install packages
-RUN apt-get update && apt-get install -y calibre wget cron
+RUN apt-get update && apt-get install -y calibre wget cron sqlite3
 
 # Set up environment variables
 ENV LIBRARY_FOLDER=/opt/library/
 ENV EBOOK_EXAMPLE_FOLDER=/opt/example
 ENV RECIPES_FOLDER=/opt/recipes
 ENV USER_DB=/opt/users.sqlite
-# One of: overwrite, new_record, ignore. See: https://manual.calibre-ebook.com/en/generated/en/calibredb.html
 ENV DUPLICATE_STRATEGY=new_record
 
 # Create folders
@@ -32,13 +31,13 @@ COPY ./recipes ${RECIPES_FOLDER}
 # Define Cronjob
 ENV CRON_TIME="0 0 * * *"
 COPY ./download_news.sh /opt/download_news.sh
-RUN crontab -l | { cat; echo "${CRON_TIME} bash /opt/download_news.sh 'http://127.0.0.1:8080'"; } | crontab -
+RUN crontab -l | { cat; echo "${CRON_TIME} bash /opt/download_news.sh 'http://127.0.0.1:8081'"; } | crontab -
 
 # Copy basic user
 COPY ./users.sqlite ${USER_DB}
 
 # Configure start
-EXPOSE 8080
+EXPOSE 8081
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 ENTRYPOINT [ "./entrypoint.sh" ]
