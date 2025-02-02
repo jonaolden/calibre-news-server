@@ -25,3 +25,6 @@ Afterwards, any recipe stored in `recipes/` (no subdirectories!) will be downloa
 Any configuration, except for the default user, can be done using environment variables.
 The most important one is `CRON_TIME`, which uses cron to specify when the news are downloaded.
 It is recommended to configure the server using a `.env` file.
+
+
+This was written by Goose.
